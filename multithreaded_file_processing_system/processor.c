@@ -61,3 +61,39 @@ static void *process_file(void *arg) {
     return NULL;
 }
 
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <file1> [file2 ...]\n", argv[0]);
+        return 1;
+    }
+
+    int n = argc - 1;
+    pthread_t *threads = malloc(n * sizeof(pthread_t));
+    FileTask *tasks = malloc(n * sizeof(FileTask));
+    if (!threads || !tasks) {
+        printf("Error: memory allocation failed.\n");
+        free(threads);
+        free(tasks);
+        return 1;
+    }
+
+    // one thread per input file
+    for (int i = 0; i < n; i++) {
+        snprintf(tasks[i].input, sizeof(tasks[i].input), "%s", argv[i + 1]);
+        tasks[i].started = 0;
+        if (pthread_create(&threads[i], NULL, process_file, &tasks[i]) == 0)
+            tasks[i].started = 1;
+        else
+            printf("[%s] Error: could not create thread.\n", tasks[i].input);
+    }
+
+    // wait for every thread that started
+    for (int i = 0; i < n; i++)
+        if (tasks[i].started)
+            pthread_join(threads[i], NULL);
+
+    printf("All files processed.\n");
+    free(threads);
+    free(tasks);
+    return 0;
+}
