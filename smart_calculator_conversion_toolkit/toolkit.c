@@ -88,3 +88,62 @@ static double read_double(const char *prompt) {
     }
 }
 
+// ---------- callbacks ----------
+
+// map: round a value to the given precision
+static double cb_round(double v, int precision) {
+    double f = pow(10.0, precision);
+    return round(v * f) / f;
+}
+
+// filter predicates: keep records whose output is above/below arg
+static int cb_above(const Record *r, double arg) { return r->output > arg; }
+static int cb_below(const Record *r, double arg) { return r->output < arg; }
+
+// compare predicates for sorting (return <0, 0, >0)
+static int cmp_type(const Record *a, const Record *b) {
+    return strcmp(a->type, b->type);
+}
+static int cmp_value(const Record *a, const Record *b) {
+    if (a->output < b->output) return -1;
+    return a->output > b->output;
+}
+
+typedef int (*FilterCB)(const Record *, double);
+typedef int (*CompareCB)(const Record *, const Record *);
+
+// apply a precision callback to every stored output
+static void map_outputs(History *h, int precision) {
+    for (int i = 0; i < h->count; i++)
+        h->items[i].output = cb_round(h->items[i].output, precision);
+}
+
+// print records accepted by the filter callback
+static void filter_records(History *h, FilterCB keep, double arg) {
+    int found = 0;
+    for (int i = 0; i < h->count; i++) {
+        if (keep(&h->items[i], arg)) {
+            printf("  %-22s %12.4f -> %.4f\n",
+                   h->items[i].type, h->items[i].input, h->items[i].output);
+            found = 1;
+        }
+    }
+    if (!found)
+        printf("No matching records.\n");
+}
+
+// selection sort driven by a compare callback
+static void sort_records(History *h, CompareCB cmp) {
+    for (int i = 0; i < h->count - 1; i++) {
+        int sel = i;
+        for (int j = i + 1; j < h->count; j++)
+            if (cmp(&h->items[j], &h->items[sel]) < 0)
+                sel = j;
+        if (sel != i) {
+            Record tmp = h->items[i];
+            h->items[i] = h->items[sel];
+            h->items[sel] = tmp;
+        }
+    }
+}
+
