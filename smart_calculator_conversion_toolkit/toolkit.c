@@ -311,3 +311,35 @@ static void callbacks_menu(History *h) {
     }
 }
 
+// ---------- menu ----------
+
+int main(void) {
+    History h = { NULL, 0, 0 };
+
+    while (1) {
+        printf("\n===== Unit Conversion Toolkit =====\n");
+        printf("1) Perform a conversion\n");
+        printf("2) View history\n");
+        printf("3) Search records\n");
+        printf("4) Sort records\n");
+        printf("5) Apply callback operations\n");
+        printf("6) Save history\n");
+        printf("7) Load history\n");
+        printf("8) Exit\n");
+
+        int choice = read_int("Select an option: ", 1, 8);
+        switch (choice) {
+            case 1: perform_conversion(&h); break;
+            case 2: view_history(&h);       break;
+            case 3: search_menu(&h);        break;
+            case 4: sort_submenu(&h);       break;
+            case 5: callbacks_menu(&h);     break;
+            case 6: save_history(&h);       break;
+            case 7: load_history(&h);       break;
+            case 8:
+                free(h.items);
+                printf("Goodbye!\n");
+                return 0;
+        }
+    }
+}
