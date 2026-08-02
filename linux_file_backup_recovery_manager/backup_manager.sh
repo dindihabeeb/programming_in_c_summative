@@ -212,3 +212,41 @@ manage_log() {
     pause
 }
 
+main_menu() {
+    while true; do
+        print_header "Linux File Backup and Recovery Manager"
+        echo "  1) Create a backup"
+        echo "  2) Restore a backup"
+        echo "  3) View backup history"
+        echo "  4) Delete an existing backup"
+        echo "  5) View or clear the activity log"
+        echo "  6) Exit"
+        echo ""
+
+        local choice
+        choice="$(read_menu_choice "Select an option (1-6): " 6)"
+        if [ $? -eq 2 ]; then
+            echo ""; echo "Input closed. Exiting."
+            log_action "PROGRAM EXIT - end of input"
+            exit 0
+        fi
+        if [ "${choice}" = "INVALID" ]; then
+            echo "Error: choose a number from 1 to 6."
+            pause; continue
+        fi
+
+        case "${choice}" in
+            1) create_backup ;;
+            2) restore_backup ;;
+            3) view_history ;;
+            4) delete_backup ;;
+            5) manage_log ;;
+            6) echo ""; echo "Goodbye!"; log_action "PROGRAM EXIT"; exit 0 ;;
+        esac
+    done
+}
+
+mkdir -p "${BACKUP_DIR}"
+touch "${LOG_FILE}"
+log_action "PROGRAM START"
+main_menu
