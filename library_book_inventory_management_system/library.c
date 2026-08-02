@@ -26,7 +26,7 @@ typedef struct {
     int capacity;
 } Library;
 
-// ---------- input helpers ----------
+// input helpers
 
 // Read a line into buf, stripping the trailing newline.
 static void read_line(const char *prompt, char *buf, int size) {
@@ -61,7 +61,7 @@ static void read_nonempty(const char *prompt, char *buf, int size) {
     } while (buf[0] == '\0');
 }
 
-// ---------- storage ----------
+// storage
 
 // Grow the array if full. Returns 0 on allocation failure.
 static int ensure_capacity(Library *lib) {
@@ -122,7 +122,7 @@ static void load_file(Library *lib) {
     printf("Loaded %d book(s) from %s.\n", lib->count, DATA_FILE);
 }
 
-// ---------- printing ----------
+// printing
 
 static void print_header(void) {
     printf("\n%-6s %-30s %-20s %-15s %-7s\n",
@@ -135,7 +135,7 @@ static void print_book(const Book *b) {
            b->id, b->title, b->author, b->category, b->copies);
 }
 
-// ---------- operations ----------
+// operations
 
 static void add_book(Library *lib) {
     int id = read_int("Book ID: ", 1);
@@ -202,7 +202,7 @@ static void delete_book(Library *lib) {
     printf("Book deleted.\n");
 }
 
-// ---------- search (manual / linear) ----------
+// search (manual / linear)
 
 static void search_menu(Library *lib) {
     printf("Search by: 1) ID  2) Title\n");
@@ -236,7 +236,7 @@ static void search_menu(Library *lib) {
     }
 }
 
-// ---------- sort (manual / selection sort) ----------
+// sort (manual / selection sort)
 
 // Compare two books on the chosen field: 1=id, 2=title, 3=copies.
 static int compare(const Book *a, const Book *b, int field) {
@@ -277,7 +277,7 @@ static void sort_menu(Library *lib) {
     display_all(lib);
 }
 
-// ---------- reports ----------
+// reports
 
 static void report(Library *lib) {
     if (lib->count == 0) {
@@ -327,7 +327,7 @@ static void report(Library *lib) {
     free(cats);
 }
 
-// ---------- menu ----------
+// menu
 
 int main(void) {
     Library lib = { NULL, 0, 0 };

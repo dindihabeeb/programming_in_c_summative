@@ -23,7 +23,7 @@ typedef struct {
     int capacity;
 } History;
 
-// ---------- conversion functions + table ----------
+// conversion functions + table
 
 typedef double (*ConvFunc)(double);
 
@@ -53,7 +53,7 @@ static const Conversion CONVERSIONS[] = {
 };
 static const int NCONV = (int)(sizeof(CONVERSIONS) / sizeof(CONVERSIONS[0]));
 
-// ---------- input helpers ----------
+// input helpers
 
 static void read_line(const char *prompt, char *buf, int size) {
     printf("%s", prompt);
@@ -88,7 +88,7 @@ static double read_double(const char *prompt) {
     }
 }
 
-// ---------- callbacks ----------
+// callbacks
 
 // map: round a value to the given precision
 static double cb_round(double v, int precision) {
@@ -147,7 +147,7 @@ static void sort_records(History *h, CompareCB cmp) {
     }
 }
 
-// ---------- storage ----------
+// storage
 
 static int ensure_capacity(History *h) {
     if (h->count < h->capacity)
@@ -225,7 +225,7 @@ static void load_history(History *h) {
     printf("Loaded %d record(s).\n", h->count);
 }
 
-// ---------- operations ----------
+// operations
 
 static void perform_conversion(History *h) {
     printf("\nAvailable conversions:\n");
@@ -311,7 +311,7 @@ static void callbacks_menu(History *h) {
     }
 }
 
-// ---------- menu ----------
+// menu
 
 int main(void) {
     History h = { NULL, 0, 0 };
