@@ -122,3 +122,83 @@ static void load_file(Library *lib) {
     printf("Loaded %d book(s) from %s.\n", lib->count, DATA_FILE);
 }
 
+// ---------- printing ----------
+
+static void print_header(void) {
+    printf("\n%-6s %-30s %-20s %-15s %-7s\n",
+           "ID", "Title", "Author", "Category", "Copies");
+    printf("--------------------------------------------------------------------------------\n");
+}
+
+static void print_book(const Book *b) {
+    printf("%-6d %-30s %-20s %-15s %-7d\n",
+           b->id, b->title, b->author, b->category, b->copies);
+}
+
+// ---------- operations ----------
+
+static void add_book(Library *lib) {
+    int id = read_int("Book ID: ", 1);
+    if (find_by_id(lib, id) != -1) {
+        printf("Error: a book with ID %d already exists.\n", id);
+        return;
+    }
+    if (!ensure_capacity(lib))
+        return;
+
+    Book *b = &lib->items[lib->count];
+    b->id = id;
+    read_nonempty("Title: ", b->title, MAX_TITLE);
+    read_nonempty("Author: ", b->author, MAX_AUTHOR);
+    read_nonempty("Category: ", b->category, MAX_CATEGORY);
+    b->copies = read_int("Copies available: ", 0);
+    lib->count++;
+
+    save_file(lib);
+    printf("Book added.\n");
+}
+
+static void display_all(Library *lib) {
+    if (lib->count == 0) {
+        printf("No books in inventory.\n");
+        return;
+    }
+    print_header();
+    for (int i = 0; i < lib->count; i++)
+        print_book(&lib->items[i]);
+}
+
+static void update_book(Library *lib) {
+    int id = read_int("Book ID to update: ", 1);
+    int i = find_by_id(lib, id);
+    if (i == -1) {
+        printf("No book with ID %d.\n", id);
+        return;
+    }
+    Book *b = &lib->items[i];
+    printf("Enter new details (ID stays %d).\n", id);
+    read_nonempty("Title: ", b->title, MAX_TITLE);
+    read_nonempty("Author: ", b->author, MAX_AUTHOR);
+    read_nonempty("Category: ", b->category, MAX_CATEGORY);
+    b->copies = read_int("Copies available: ", 0);
+
+    save_file(lib);
+    printf("Book updated.\n");
+}
+
+static void delete_book(Library *lib) {
+    int id = read_int("Book ID to delete: ", 1);
+    int i = find_by_id(lib, id);
+    if (i == -1) {
+        printf("No book with ID %d.\n", id);
+        return;
+    }
+    // shift the tail down to fill the gap
+    for (int j = i; j < lib->count - 1; j++)
+        lib->items[j] = lib->items[j + 1];
+    lib->count--;
+
+    save_file(lib);
+    printf("Book deleted.\n");
+}
+
