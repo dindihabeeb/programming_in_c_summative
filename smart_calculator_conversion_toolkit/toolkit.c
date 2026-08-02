@@ -53,3 +53,38 @@ static const Conversion CONVERSIONS[] = {
 };
 static const int NCONV = (int)(sizeof(CONVERSIONS) / sizeof(CONVERSIONS[0]));
 
+// ---------- input helpers ----------
+
+static void read_line(const char *prompt, char *buf, int size) {
+    printf("%s", prompt);
+    if (!fgets(buf, size, stdin)) {
+        buf[0] = '\0';
+        return;
+    }
+    buf[strcspn(buf, "\n")] = '\0';
+}
+
+static int read_int(const char *prompt, int min, int max) {
+    char buf[64], *end;
+    long v;
+    while (1) {
+        read_line(prompt, buf, sizeof(buf));
+        v = strtol(buf, &end, 10);
+        if (end != buf && *end == '\0' && v >= min && v <= max)
+            return (int)v;
+        printf("Invalid choice, try again.\n");
+    }
+}
+
+static double read_double(const char *prompt) {
+    char buf[64], *end;
+    double v;
+    while (1) {
+        read_line(prompt, buf, sizeof(buf));
+        v = strtod(buf, &end);
+        if (end != buf && *end == '\0')
+            return v;
+        printf("Invalid number, try again.\n");
+    }
+}
+
