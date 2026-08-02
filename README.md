@@ -4,7 +4,7 @@ This repo holds my summative projects for the low level / systems programming co
 
 ## Projects
 
-1. Smart Parking Lot Monitoring System (kept separately, added later)
+1. Smart Parking Lot Monitoring System, an Arduino Uno project simulated in Tinkercad with an EasyEDA PCB. See `smart_parking_lot_monitoring_system/`.
 2. Linux File Backup and Recovery Manager, a Bash tool for backing up and restoring folders. See `linux_file_backup_recovery_manager/`.
 3. Library Book Inventory Management System, written in C with dynamic memory and file storage. See `library_book_inventory_management_system/`.
 4. Unit Conversion Toolkit, a C program built around function pointers and callbacks. See `smart_calculator_conversion_toolkit/`.
