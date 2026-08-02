@@ -202,3 +202,128 @@ static void delete_book(Library *lib) {
     printf("Book deleted.\n");
 }
 
+// ---------- search (manual / linear) ----------
+
+static void search_menu(Library *lib) {
+    printf("Search by: 1) ID  2) Title\n");
+    int choice = read_int("Select: ", 1);
+
+    if (choice == 1) {
+        int id = read_int("Book ID: ", 1);
+        int i = find_by_id(lib, id);
+        if (i == -1) {
+            printf("Not found.\n");
+        } else {
+            print_header();
+            print_book(&lib->items[i]);
+        }
+    } else if (choice == 2) {
+        char title[MAX_TITLE];
+        read_nonempty("Title: ", title, MAX_TITLE);
+        int found = 0;
+        for (int i = 0; i < lib->count; i++) {
+            if (strcmp(lib->items[i].title, title) == 0) {
+                if (!found)
+                    print_header();
+                print_book(&lib->items[i]);
+                found = 1;
+            }
+        }
+        if (!found)
+            printf("Not found.\n");
+    } else {
+        printf("Invalid choice.\n");
+    }
+}
+
+// ---------- sort (manual / selection sort) ----------
+
+// Compare two books on the chosen field: 1=id, 2=title, 3=copies.
+static int compare(const Book *a, const Book *b, int field) {
+    if (field == 2)
+        return strcmp(a->title, b->title);
+    if (field == 3)
+        return a->copies - b->copies;
+    return a->id - b->id;
+}
+
+static void sort_menu(Library *lib) {
+    if (lib->count == 0) {
+        printf("No books to sort.\n");
+        return;
+    }
+    printf("Sort by: 1) ID  2) Title  3) Copies\n");
+    int field = read_int("Select: ", 1);
+    if (field < 1 || field > 3) {
+        printf("Invalid choice.\n");
+        return;
+    }
+
+    // selection sort, ascending
+    for (int i = 0; i < lib->count - 1; i++) {
+        int sel = i;
+        for (int j = i + 1; j < lib->count; j++)
+            if (compare(&lib->items[j], &lib->items[sel], field) < 0)
+                sel = j;
+        if (sel != i) {
+            Book tmp = lib->items[i];
+            lib->items[i] = lib->items[sel];
+            lib->items[sel] = tmp;
+        }
+    }
+
+    save_file(lib);
+    printf("Sorted.\n");
+    display_all(lib);
+}
+
+// ---------- reports ----------
+
+static void report(Library *lib) {
+    if (lib->count == 0) {
+        printf("No books in inventory.\n");
+        return;
+    }
+
+    int total_copies = 0;
+    int max_i = 0;
+    for (int i = 0; i < lib->count; i++) {
+        total_copies += lib->items[i].copies;
+        if (lib->items[i].copies > lib->items[max_i].copies)
+            max_i = i;
+    }
+
+    printf("\n===== Inventory Report =====\n");
+    printf("Total books:          %d\n", lib->count);
+    printf("Total copies:         %d\n", total_copies);
+    printf("Most copies:          \"%s\" (%d copies)\n",
+           lib->items[max_i].title, lib->items[max_i].copies);
+
+    // count books per category
+    typedef struct { char name[MAX_CATEGORY]; int n; } Cat;
+    Cat *cats = malloc(lib->count * sizeof(Cat));
+    if (!cats) {
+        printf("Error: memory allocation failed for report.\n");
+        return;
+    }
+    int ncats = 0;
+    for (int i = 0; i < lib->count; i++) {
+        int k;
+        for (k = 0; k < ncats; k++)
+            if (strcmp(cats[k].name, lib->items[i].category) == 0)
+                break;
+        if (k == ncats) {
+            strcpy(cats[ncats].name, lib->items[i].category);
+            cats[ncats].n = 0;
+            ncats++;
+        }
+        cats[k].n++;
+    }
+
+    printf("Books per category:\n");
+    for (int k = 0; k < ncats; k++)
+        printf("  %-20s %d\n", cats[k].name, cats[k].n);
+
+    free(cats);
+}
+
