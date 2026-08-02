@@ -16,3 +16,30 @@ typedef struct {
 } FileTask;
 
 // Thread body: analyze one file and save its stats.
+static void *process_file(void *arg) {
+    FileTask *t = arg;
+
+    FILE *f = fopen(t->input, "r");
+    if (!f) {
+        printf("[%s] Error: cannot open file.\n", t->input);
+        return NULL;
+    }
+    printf("[%s] Processing...\n", t->input);
+
+    long lines = 0, words = 0, chars = 0;
+    int c, in_word = 0;
+    while ((c = fgetc(f)) != EOF) {
+        chars++;
+        if (c == '\n')
+            lines++;
+        if (isspace(c)) {
+            in_word = 0;
+        } else if (!in_word) {
+            in_word = 1;
+            words++;
+        }
+    }
+    fclose(f);
+    t->lines = lines;
+    t->words = words;
+    t->chars = chars;
