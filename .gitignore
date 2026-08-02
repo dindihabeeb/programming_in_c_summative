@@ -1,0 +1,9 @@
+# compiled binaries
+library
+toolkit
+processor
+*.o
+
+# generated data and output files
+*.dat
+*.stats
