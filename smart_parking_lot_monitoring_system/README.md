@@ -30,11 +30,35 @@ The Serial Monitor prints a line after every accepted entry or exit, and a full 
 
 ![Serial Monitor output](images/serial_monitor.png)
 
-## PCB in EasyEDA
+## EasyEDA schematic
 
-The schematic and PCB layout were drawn in EasyEDA using the same parts: five LEDs (LED1 to LED5), five resistors (R1 to R5), the two buttons (SW1, SW2), and headers to bring the signals out to the Arduino.
+The schematic uses the same parts as the simulation: five LEDs (LED1 to LED5), five 220R resistors (R1 to R5), the two buttons (SW1, SW2), and two female headers (J1 and J2) that bring the signals out to the Arduino. The notes on the sheet record the design decisions: the button pull-ups are the internal ones enabled in firmware, the switches are active low, and D13 drives the onboard heartbeat LED.
+
+![EasyEDA schematic](images/schematic.png)
+
+The full schematic is also kept as a PDF in `docs/`.
+
+## PCB layout
+
+The two layer board with all traces routed.
+
+![PCB layout](images/pcb_layout.png)
+
+And the 3D preview of the same board.
 
 ![PCB 3D view](images/pcb_3d.png)
+
+## Bill of materials
+
+| Part            | Designators          | Qty |
+|-----------------|----------------------|-----|
+| LED 3mm         | LED1 to LED5         | 5   |
+| 220R resistor   | R1 to R5             | 5   |
+| Tactile switch  | SW1, SW2             | 2   |
+| Female header 1x10 | J1                | 1   |
+| Female header 1x8  | J2                | 1   |
+
+The exported BOM is in `docs/` as a CSV.
 
 ## Error handling
 
@@ -47,4 +71,5 @@ The schematic and PCB layout were drawn in EasyEDA using the same parts: five LE
 ## Files
 
 - `smart_parking_monitor.ino` is the Arduino sketch.
-- `images/` holds the Tinkercad, Serial Monitor and PCB screenshots.
+- `images/` holds the Tinkercad, Serial Monitor, schematic and PCB pictures.
+- `docs/` holds the schematic PDF and the bill of materials CSV exported from EasyEDA.
