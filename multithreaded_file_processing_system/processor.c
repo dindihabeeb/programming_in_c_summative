@@ -43,3 +43,21 @@ static void *process_file(void *arg) {
     t->lines = lines;
     t->words = words;
     t->chars = chars;
+
+    // write results to a separate output file
+    char out[300];
+    snprintf(out, sizeof(out), "%s.stats", t->input);
+    FILE *of = fopen(out, "w");
+    if (!of) {
+        printf("[%s] Error: cannot write output file.\n", t->input);
+        return NULL;
+    }
+    fprintf(of, "File: %s\nLines: %ld\nWords: %ld\nCharacters: %ld\n",
+            t->input, lines, words, chars);
+    fclose(of);
+
+    printf("[%s] Done -> %s (lines=%ld, words=%ld, chars=%ld)\n",
+           t->input, out, lines, words, chars);
+    return NULL;
+}
+
