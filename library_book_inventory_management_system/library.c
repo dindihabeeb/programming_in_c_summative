@@ -327,3 +327,39 @@ static void report(Library *lib) {
     free(cats);
 }
 
+// ---------- menu ----------
+
+int main(void) {
+    Library lib = { NULL, 0, 0 };
+    load_file(&lib);
+
+    while (1) {
+        printf("\n===== Library Inventory =====\n");
+        printf("1) Add a book\n");
+        printf("2) Display all books\n");
+        printf("3) Update a book\n");
+        printf("4) Delete a book\n");
+        printf("5) Search\n");
+        printf("6) Sort\n");
+        printf("7) Inventory report\n");
+        printf("8) Exit\n");
+
+        int choice = read_int("Select an option: ", 1);
+        switch (choice) {
+            case 1: add_book(&lib);    break;
+            case 2: display_all(&lib); break;
+            case 3: update_book(&lib); break;
+            case 4: delete_book(&lib); break;
+            case 5: search_menu(&lib); break;
+            case 6: sort_menu(&lib);   break;
+            case 7: report(&lib);      break;
+            case 8:
+                save_file(&lib);
+                free(lib.items);
+                printf("Goodbye!\n");
+                return 0;
+            default:
+                printf("Invalid option.\n");
+        }
+    }
+}
