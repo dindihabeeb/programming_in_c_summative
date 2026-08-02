@@ -23,3 +23,33 @@ typedef struct {
     int capacity;
 } History;
 
+// ---------- conversion functions + table ----------
+
+typedef double (*ConvFunc)(double);
+
+static double c_to_f(double v)  { return v * 9.0 / 5.0 + 32.0; }
+static double f_to_c(double v)  { return (v - 32.0) * 5.0 / 9.0; }
+static double km_to_mi(double v){ return v * 0.621371; }
+static double mi_to_km(double v){ return v / 0.621371; }
+static double kg_to_lb(double v){ return v * 2.20462; }
+static double lb_to_kg(double v){ return v / 2.20462; }
+static double cm_to_in(double v){ return v / 2.54; }
+static double in_to_cm(double v){ return v * 2.54; }
+
+typedef struct {
+    const char *name;
+    ConvFunc func;
+} Conversion;
+
+static const Conversion CONVERSIONS[] = {
+    { "Celsius->Fahrenheit", c_to_f },
+    { "Fahrenheit->Celsius", f_to_c },
+    { "Kilometres->Miles",   km_to_mi },
+    { "Miles->Kilometres",   mi_to_km },
+    { "Kilograms->Pounds",   kg_to_lb },
+    { "Pounds->Kilograms",   lb_to_kg },
+    { "Centimetres->Inches", cm_to_in },
+    { "Inches->Centimetres", in_to_cm },
+};
+static const int NCONV = (int)(sizeof(CONVERSIONS) / sizeof(CONVERSIONS[0]));
+
