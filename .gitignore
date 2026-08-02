@@ -7,3 +7,4 @@ processor
 # generated data and output files
 *.dat
 *.stats
+a.out
