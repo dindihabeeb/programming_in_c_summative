@@ -147,3 +147,167 @@ static void sort_records(History *h, CompareCB cmp) {
     }
 }
 
+// ---------- storage ----------
+
+static int ensure_capacity(History *h) {
+    if (h->count < h->capacity)
+        return 1;
+    int cap = h->capacity == 0 ? 8 : h->capacity * 2;
+    Record *tmp = realloc(h->items, cap * sizeof(Record));
+    if (!tmp) {
+        printf("Error: memory allocation failed.\n");
+        return 0;
+    }
+    h->items = tmp;
+    h->capacity = cap;
+    return 1;
+}
+
+static void print_record(const Record *r) {
+    printf("  %-22s %12.4f -> %.4f\n", r->type, r->input, r->output);
+}
+
+static void view_history(History *h) {
+    if (h->count == 0) {
+        printf("History is empty.\n");
+        return;
+    }
+    printf("\n%-24s %12s    %s\n", "Type", "Input", "Output");
+    printf("--------------------------------------------------------\n");
+    for (int i = 0; i < h->count; i++)
+        print_record(&h->items[i]);
+}
+
+static void save_history(History *h) {
+    FILE *f = fopen(DATA_FILE, "wb");
+    if (!f) {
+        printf("Error: could not open %s for writing.\n", DATA_FILE);
+        return;
+    }
+    fwrite(&h->count, sizeof(int), 1, f);
+    fwrite(h->items, sizeof(Record), h->count, f);
+    fclose(f);
+    printf("Saved %d record(s).\n", h->count);
+}
+
+static void load_history(History *h) {
+    FILE *f = fopen(DATA_FILE, "rb");
+    if (!f) {
+        printf("No saved history found.\n");
+        return;
+    }
+    int count = 0;
+    if (fread(&count, sizeof(int), 1, f) != 1 || count < 0) {
+        printf("Error: corrupt history file.\n");
+        fclose(f);
+        return;
+    }
+    if (count == 0) { // empty history file
+        free(h->items);
+        h->items = NULL;
+        h->count = 0;
+        h->capacity = 0;
+        fclose(f);
+        printf("Loaded 0 record(s).\n");
+        return;
+    }
+    Record *tmp = malloc(count * sizeof(Record));
+    if (!tmp) {
+        printf("Error: memory allocation failed while loading.\n");
+        fclose(f);
+        return;
+    }
+    free(h->items);
+    h->items = tmp;
+    h->count = (int)fread(h->items, sizeof(Record), count, f);
+    h->capacity = count;
+    fclose(f);
+    printf("Loaded %d record(s).\n", h->count);
+}
+
+// ---------- operations ----------
+
+static void perform_conversion(History *h) {
+    printf("\nAvailable conversions:\n");
+    for (int i = 0; i < NCONV; i++)
+        printf("  %d) %s\n", i + 1, CONVERSIONS[i].name);
+
+    int choice = read_int("Select a conversion: ", 1, NCONV);
+    double input = read_double("Enter value: ");
+
+    // function pointer selected from the table at runtime
+    ConvFunc f = CONVERSIONS[choice - 1].func;
+    double output = f(input);
+
+    if (!ensure_capacity(h))
+        return;
+    Record *r = &h->items[h->count++];
+    strcpy(r->type, CONVERSIONS[choice - 1].name);
+    r->input = input;
+    r->output = output;
+
+    printf("Result: %.4f\n", output);
+}
+
+static void search_menu(History *h) {
+    if (h->count == 0) {
+        printf("History is empty.\n");
+        return;
+    }
+    printf("Search by: 1) Conversion type  2) Converted value\n");
+    int choice = read_int("Select: ", 1, 2);
+    int found = 0;
+
+    if (choice == 1) {
+        char type[MAX_TYPE];
+        read_line("Enter conversion type (e.g. Miles->Kilometres): ", type, MAX_TYPE);
+        for (int i = 0; i < h->count; i++)
+            if (strcmp(h->items[i].type, type) == 0) {
+                print_record(&h->items[i]);
+                found = 1;
+            }
+    } else {
+        double val = read_double("Enter converted value: ");
+        for (int i = 0; i < h->count; i++)
+            if (fabs(h->items[i].output - val) < 1e-6) {
+                print_record(&h->items[i]);
+                found = 1;
+            }
+    }
+    if (!found)
+        printf("No matching records.\n");
+}
+
+static void sort_submenu(History *h) {
+    if (h->count == 0) {
+        printf("History is empty.\n");
+        return;
+    }
+    printf("Sort by: 1) Conversion type  2) Converted value\n");
+    int choice = read_int("Select: ", 1, 2);
+    sort_records(h, choice == 1 ? cmp_type : cmp_value);
+    printf("Sorted.\n");
+    view_history(h);
+}
+
+static void callbacks_menu(History *h) {
+    if (h->count == 0) {
+        printf("History is empty.\n");
+        return;
+    }
+    printf("Callback: 1) Round all outputs to precision  2) Filter records\n");
+    int choice = read_int("Select: ", 1, 2);
+
+    if (choice == 1) {
+        int p = read_int("Decimal precision (0-10): ", 0, 10);
+        map_outputs(h, p);
+        printf("Applied.\n");
+        view_history(h);
+    } else {
+        printf("Keep records with output: 1) above  2) below a value\n");
+        int dir = read_int("Select: ", 1, 2);
+        double arg = read_double("Value: ");
+        filter_records(h, dir == 1 ? cb_above : cb_below, arg);
+    }
+}
+
