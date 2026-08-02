@@ -148,3 +148,67 @@ restore_backup() {
     pause
 }
 
+view_history() {
+    print_header "Backup History"
+    list_backups
+    pause
+}
+
+delete_backup() {
+    print_header "Delete a Backup"
+    list_backups || { pause; return; }
+
+    echo ""
+    local choice
+    choice="$(read_menu_choice "Backup number to delete: " "${#BACKUP_LIST[@]}")"
+    [ $? -eq 2 ] && return
+    if [ "${choice}" = "INVALID" ]; then
+        echo "Error: invalid selection."
+        log_action "DELETE FAILED - invalid selection"
+        pause; return
+    fi
+
+    local archive_path="${BACKUP_LIST[$((choice - 1))]}"
+    local name; name="$(basename "${archive_path}")"
+
+    read -r -p "Delete '${name}'? (y/n): " yn
+    if [[ "${yn}" =~ ^[Yy]$ ]]; then
+        rm -f "${archive_path}" && echo "Deleted." && log_action "DELETE SUCCESS - ${name}"
+    else
+        echo "Cancelled."
+        log_action "DELETE CANCELLED - ${name}"
+    fi
+    pause
+}
+
+manage_log() {
+    print_header "Activity Log"
+    echo "  1) View log"
+    echo "  2) Clear log"
+    echo "  3) Back"
+    echo ""
+
+    local choice
+    choice="$(read_menu_choice "Select: " 3)"
+    [ $? -eq 2 ] && return
+    case "${choice}" in
+        1)
+            echo ""
+            if [ -s "${LOG_FILE}" ]; then cat "${LOG_FILE}"; else echo "Log is empty."; fi
+            ;;
+        2)
+            read -r -p "Clear the log? (y/n): " yn
+            if [[ "${yn}" =~ ^[Yy]$ ]]; then
+                : > "${LOG_FILE}"
+                log_action "LOG CLEARED"
+                echo "Cleared."
+            else
+                echo "Cancelled."
+            fi
+            ;;
+        3) return ;;
+        *) echo "Error: invalid selection." ;;
+    esac
+    pause
+}
+
